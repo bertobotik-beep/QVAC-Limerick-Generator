@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QVAC Limerick Generator</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(160deg, #f0f9ff 0%, #e0f2fe 100%);
+    font-family: system-ui, -apple-system, sans-serif;
+    color: #0c4a6e;
+    display: flex;
+    justify-content: center;
+    padding: 46px 20px;
+  }
+  .wrap { width: 100%; max-width: 520px; }
+  h1 { font-size: 1.5rem; margin: 0 0 6px; color: #0369a1; font-weight: 800; text-align: center; }
+  .subtitle { color: #4d84a8; margin-bottom: 24px; font-size: 0.9rem; text-align: center; }
+  .card {
+    background: #ffffff;
+    border: 2px solid #bae6fd;
+    border-radius: 16px;
+    padding: 28px 26px;
+  }
+  input[type=text] {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 2px solid #bae6fd;
+    background: #f7fdff;
+    color: #0c4a6e;
+    font-family: inherit;
+    font-size: 1rem;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  button.action {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    background: #0284c7;
+    color: #fff;
+    width: 100%;
+  }
+  button.action:disabled { opacity: 0.4; cursor: not-allowed; }
+  .status { margin-top: 14px; font-size: 0.85rem; color: #4d84a8; min-height: 1.2em; text-align: center; }
+  .result-body {
+    background: #f0f9ff;
+    border-left: 4px solid #0284c7;
+    padding: 16px 16px;
+    margin-top: 18px;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    white-space: pre-line;
+    font-style: italic;
+  }
+  .footer-note { color: #4d84a8; font-size: 0.78rem; margin-top: 20px; text-align: center; }
+  .spinner {
+    display: inline-block;
+    width: 13px; height: 13px;
+    border: 2px solid #e0f2fe;
+    border-top-color: #0284c7;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>QVAC Limerick Generator</h1>
+    <p class="subtitle">Enter a topic or word, get an original 5-line limerick. 100% on-device.</p>
+
+    <div class="card">
+      <input type="text" id="mainInput" placeholder="e.g. a clumsy cat, Monday mornings, pizza" />
+      <button class="action" id="generateBtn">Write My Limerick</button>
+      <div class="status" id="status"></div>
+      <div id="resultBox"></div>
+    </div>
+
+    <p class="footer-note">Everything runs locally on your machine. No text ever leaves this device.</p>
+  </div>
+
+  <script>
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    const mainInput = document.getElementById('mainInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const status = document.getElementById('status');
+    const resultBox = document.getElementById('resultBox');
+
+    async function generate() {
+      const value = mainInput.value.trim();
+      if (!value) return;
+      generateBtn.disabled = true;
+      resultBox.innerHTML = '';
+      status.innerHTML = '<span class="spinner"></span>Composing your limerick...';
+
+      try {
+        const res = await fetch('/api/limerick', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic: value }),
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        status.textContent = '';
+        resultBox.innerHTML = `<div class="result-body">${escapeHtml(data.limerick)}</div>`;
+      } catch (err) {
+        status.textContent = 'Error: ' + err.message;
+      } finally {
+        generateBtn.disabled = false;
+      }
+    }
+
+    generateBtn.addEventListener('click', generate);
+    mainInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') generate(); });
+  </script>
+</body>
+</html>

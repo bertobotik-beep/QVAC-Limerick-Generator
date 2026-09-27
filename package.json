@@ -1,0 +1,25 @@
+{
+  "name": "qvac-limerick-generator",
+  "version": "1.0.0",
+  "description": "Enter a topic or word and an on-device AI writes a short original limerick about it. No cloud call, no API key.",
+  "type": "module",
+  "main": "src/gui.js",
+  "scripts": {
+    "start": "node src/gui.js",
+    "gui": "node src/gui.js"
+  },
+  "keywords": [
+    "qvac",
+    "on-device-ai",
+    "llm",
+    "offline-ai",
+    "fun"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@qvac/sdk": "^0.19.0"
+  },
+  "engines": {
+    "node": ">=22.17"
+  }
+}
